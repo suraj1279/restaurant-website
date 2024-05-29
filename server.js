@@ -5,6 +5,8 @@ const { MongoClient } = require("mongodb");
 const bodyParser = require("body-parser");
 const cookieparser = require("cookie-parser");
 app.use(cookieparser());
+require("dotenv").config();
+
 const session = require("express-session");
 const oneday = 1000 * 60 * 60 * 24;
 app.use(
@@ -30,9 +32,8 @@ let datacollection;
 let ordercollection;
 let homecollection;
 let paymentcollection;
-MongoClient.connect(
-  "mongodb+srv://2111981279:SurajSingh@cluster0.xbkkxhr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-)
+const PORT = process.env.PORT || 3000;
+MongoClient.connect(process.env.MONGODB_URI)
   .then((client) => {
     console.log("Connected to the database");
     db = client.db("list");
@@ -58,9 +59,9 @@ app.post("/log", async (req, res) => {
       profile = req.body.username;
       Password = req.body.password;
       useremail = user.email;
-      console.log(user.role);
+     
       if (user.role == "admin") {
-        res.sendFile(path.join(__dirname, "admin.html"));
+        res.sendFile(path.join(__dirname, "testadmin.html"));
 
       } else if (user.role =='user') {
         res.sendFile(path.join(__dirname, "home.html"));
@@ -104,7 +105,7 @@ app.post("/sign", (req, res) => {
         //obj.img = "images/profile.jpeg";
         userscollection.insertOne(obj).then(() => {
           if (req.body.role === 'admin') {
-            res.sendFile(path.join(__dirname, "admin.html"));
+            res.sendFile(path.join(__dirname, "testadmin.html"));
           }
           else {
             res.sendFile(path.join(__dirname, "home.html"));
@@ -137,6 +138,11 @@ app.get("/product", (req, res) => {
       console.log(error);
       res.status(500).send("Internal Server Error");
     });
+});
+app.get("/allproduct", (req, res) => {
+  datacollection.find().toArray().then((result) => {
+    res.json({profile:profile,useremail,useremail,products: result });
+  });
 });
 app.get("/homeproduct", (req, res) => {
   homecollection
@@ -185,6 +191,35 @@ app.post("/delete", async (req, res) => {
     res.status(200).send("Order placed successfully!");
   } catch (error) {
     console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+app.post("/admindelete", async (req, res) => {
+  try {
+    let obj = {
+      Name: req.body.Name,
+      price: req.body.price,
+      img: req.body.img,
+    };
+
+    await datacollection.deleteOne(obj);
+
+    res.status(200).send("Order placed successfully!");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+app.post("/adminupdate", (req, res) => {
+  try {
+    let obj = {};
+    obj.Name = req.body.Name;
+    obj.price = req.body.price;
+    obj.img = req.body.img;
+    datacollection.updateOne(obj);
+    res.send(200).send("Update Item successfully!");
+  } catch (error) {
+    console.log(error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -250,7 +285,7 @@ app.post("/addData",async (req, res) => {
         reviews: req.body.reviews,
       }
       datacollection.insertOne(obj).then(() => {
-        res.sendFile(path.join(__dirname, "admin.html"));
+        res.sendFile(path.join(__dirname, "testadmin.html"));
       })
     }
   } catch (error) {
@@ -258,7 +293,4 @@ app.post("/addData",async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-app.listen(3000, () => {
-  console.log("Server Started");
-});
+app.listen(PORT, () => console.log(`Server started ${PORT}`));
