@@ -34,7 +34,7 @@ let homecollection;
 let paymentcollection;
 const PORT = process.env.PORT || 3000;
 MongoClient.connect(process.env.MONGODB_URI)
-  .then((client) => {
+  .then((client)=>{
     console.log("Connected to the database");
     db = client.db("list");
     datacollection = db.collection("store");
@@ -43,14 +43,13 @@ MongoClient.connect(process.env.MONGODB_URI)
     homecollection = db.collection("homePage");
     paymentcollection = db.collection("payment");
   })
-  .catch((error) => {
-    console.log("Error connecting to the database:", error);
+  .catch((error)=>{
+    console.log("Error connecting to the database:",error);
   });
-
-app.get("/log", (req, res) => {
-  res.sendFile(path.join(__dirname, "login.html"));
+app.get("/log",(req,res)=>{
+  res.sendFile(path.join(__dirname,"login.html"));
 });
-app.post("/log", async (req, res) => {
+app.post("/log",async(req,res)=>{
   const { username, password, role } = req.body;
  // console.log(req.body.role);
   try {
